@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI业务理解与安全变更闭环</title>
+<style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--ink:#152236;--muted:#64748b;--line:#dfe6ef;
+  --navy:#0b1730;--blue:#2563eb;--blue2:#1d4ed8;--cyan:#0891b2;
+  --green:#059669;--amber:#d97706;--red:#dc2626;
+  --soft-blue:#edf4ff;--soft-green:#ecfdf5;--soft-amber:#fff8e8;--soft-red:#fff1f2;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",Arial,sans-serif;
+  line-height:1.68;
+}
+.topbar{
+  position:sticky;top:0;z-index:20;background:rgba(11,23,48,.96);
+  color:#fff;border-bottom:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px);
+}
+.topbar-inner{width:min(1200px,92vw);height:58px;margin:auto;display:flex;align-items:center;justify-content:space-between}
+.brand{font-weight:700}
+.badge{font-size:12px;color:#dbeafe;border:1px solid rgba(255,255,255,.16);padding:6px 10px;border-radius:999px}
+main{width:min(1200px,92vw);margin:auto}
+.hero{
+  margin-top:28px;padding:54px 58px;border-radius:24px;color:#fff;
+  background:linear-gradient(135deg,#0b1730 0%,#12376f 58%,#185ab9 100%);
+  box-shadow:0 20px 55px rgba(24,59,116,.18)
+}
+.eyebrow{font-size:13px;letter-spacing:1.5px;color:#bfdbfe;font-weight:800}
+h1{font-size:42px;line-height:1.15;letter-spacing:-1px;margin:12px 0 14px}
+.hero p{margin:0;color:#dbeafe;font-size:19px;max-width:1020px}
+.hero-grid{display:grid;grid-template-columns:1.25fr .75fr;gap:18px;margin-top:28px}
+.hero-stat{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);border-radius:16px;padding:18px}
+.hero-stat .big{font-size:26px;font-weight:800}
+.hero-stat .small{font-size:13px;color:#cfe0fb}
+.section{padding:50px 0 6px}
+.section-title{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:18px}
+.section-title h2{margin:0;font-size:28px}
+.section-title .sub{font-size:13px;color:var(--muted)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:21px;box-shadow:0 8px 24px rgba(16,34,62,.04)}
+.card h3{margin:0 0 7px;font-size:18px}
+.card p{margin:0;color:var(--muted)}
+.callout{padding:18px 20px;border-radius:14px;border:1px solid #cfe0ff;border-left:5px solid var(--blue);background:var(--soft-blue)}
+.callout strong{color:var(--blue2)}
+.small{font-size:13px;color:var(--muted)}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}
+.kpi .n{font-size:25px;font-weight:800}
+.kpi .t{font-size:12px;color:var(--muted)}
+.flow{
+  display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:20px;
+  background:#fff;border:1px solid var(--line);border-radius:18px
+}
+.step{min-width:125px;padding:13px 14px;text-align:center;border:1px solid #cfe0ff;background:#f8fbff;border-radius:12px}
+.step b{display:block}.step span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.arrow{font-size:22px;color:#8291a5}
+.arch{
+  background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;overflow:auto
+}
+.arch-row{display:flex;gap:12px;align-items:stretch;margin:12px 0}
+.arch-box{flex:1;min-width:150px;padding:15px;border:1px solid #dbe3ee;border-radius:14px;background:#f8fafc;text-align:center}
+.arch-box b{display:block}.arch-box span{font-size:12px;color:var(--muted)}
+.layer{font-size:12px;color:#7d8da2;margin:5px 0}
+.three-col{
+  display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:14px;align-items:start
+}
+.stage{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}
+.stage h3{margin:0 0 12px}
+.stage .item{padding:10px 12px;border-radius:10px;background:#f8fafc;border:1px solid #e7edf4;margin-top:9px}
+.stage .item b{font-size:13px}.stage .item div{font-size:12px;color:var(--muted);margin-top:3px}
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;margin-right:5px}
+.fact{background:#e8f0ff;color:#1d4ed8}.inf{background:#fff7ed;color:#b45309}.unk{background:#f1f5f9;color:#475569}
+.good{background:var(--soft-green);border-left-color:var(--green);border-color:#bbf7d0}
+.good strong{color:#047857}
+.warn{background:var(--soft-amber);border-left-color:var(--amber);border-color:#fed7aa}
+.warn strong{color:#b45309}
+.danger{background:var(--soft-red);border-left-color:var(--red);border-color:#fecdd3}
+.danger strong{color:#be123c}
+.code{
+  background:#0f172a;color:#dbeafe;border-radius:14px;padding:18px;overflow:auto;
+  font-family:Consolas,Monaco,monospace;font-size:13px;line-height:1.55
+}
+table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+th,td{padding:13px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}
+th{background:#f8fafc;font-size:13px}
+tr:last-child td{border-bottom:none}
+.footer{margin:55px 0 30px;padding-top:18px;border-top:1px solid var(--line);color:#738196;font-size:12px}
+@media(max-width:900px){
+  .hero-grid,.grid-2,.grid-3,.grid-4,.three-col{grid-template-columns:1fr}
+  .hero{padding:38px 26px}h1{font-size:33px}.arch-row{flex-wrap:wrap}
+}
+@media print{.topbar{position:static}.hero{box-shadow:none}body{background:#fff}}
+</style>
+</head>
+
+<body>
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">AI研发提效 · 业务理解与安全变更</div>
+    <div class="badge">CodeGraph + Business Knowledge + OpenSpec + DeepSeek</div>
+  </div>
+</div>
+
+<main>
+  <section class="hero">
+    <div class="eyebrow">AI CHANGE ENGINEERING</div>
+    <h1>AI理解了代码以后，如何理解业务并安全完成一次变更？</h1>
+    <p>
+      核心不是让模型“猜业务”，而是把代码事实、业务事实、历史事实和变更意图组合成可审查的上下文，
+      形成“业务理解 → 影响分析 → 变更契约 → 受控实施 → 独立验证 → 知识回流”的闭环。
+    </p>
+    <div class="hero-grid">
+      <div class="hero-stat">
+        <div class="big">一句话架构</div>
+        <div class="small">CodeGraph 解决“代码怎么连接”，Business Knowledge 解决“业务为什么这么做”，OpenSpec 解决“这次要改变什么”，Verifier 证明“实际改动没有超出业务意图”。</div>
+      </div>
+      <div class="hero-stat">
+        <div class="big">核心原则</div>
+        <div class="small">AI先理解，再计划；先形成变更契约，再修改；先验证，再交付；未知业务规则不能由AI自行决定。</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>01 · 四层事实模型</h2>
+      <div class="sub">业务理解不是单一知识库</div>
+    </div>
+    <div class="grid-4">
+      <div class="kpi"><div class="n" style="color:#1d4ed8">Code Fact</div><div class="t">CodeGraph：调用、依赖、模块、测试、事件、影响面</div></div>
+      <div class="kpi"><div class="n" style="color:#047857">Business Fact</div><div class="t">术语、规则、流程、状态机、业务不变量、模块职责</div></div>
+      <div class="kpi"><div class="n" style="color:#b45309">Historical Fact</div><div class="t">Git / PR / 历史需求 / ADR / 过去类似改动</div></div>
+      <div class="kpi"><div class="n" style="color:#7c3aed">Change Fact</div><div class="t">本次需求、Scope、Spec、Acceptance、风险、约束</div></div>
+    </div>
+    <div class="callout" style="margin-top:18px">
+      <strong>AI 的业务理解 = 多源事实的组合，而不是“读一份业务文档”。</strong>
+      <div class="small" style="margin-top:6px">每个业务结论都应尽可能带 Evidence；无法确认的内容明确标记 UNKNOWN，不允许模型把推测升级成业务事实。</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>02 · Business Knowledge 如何建设</h2>
+      <div class="sub">先让 AI 挖候选知识，再让人确认正式事实</div>
+    </div>
+    <div class="flow">
+      <div class="step"><b>代码</b><span>CodeGraph / Source</span></div><div class="arrow">+</div>
+      <div class="step"><b>需求 / 文档</b><span>业务原始资料</span></div><div class="arrow">+</div>
+      <div class="step"><b>测试</b><span>可执行行为证据</span></div><div class="arrow">+</div>
+      <div class="step"><b>Git / PR</b><span>历史设计证据</span></div><div class="arrow">→</div>
+      <div class="step"><b>Knowledge Agent</b><span>生成候选知识</span></div><div class="arrow">→</div>
+      <div class="step"><b>Human Review</b><span>确认事实</span></div>
+    </div>
+
+    <div class="grid-3" style="margin-top:18px">
+      <div class="card">
+        <h3>BusinessTerm</h3>
+        <p>订单、支付成功、取消、结算等业务概念，以及代码名称、数据库名称、历史叫法。</p>
+      </div>
+      <div class="card">
+        <h3>BusinessRule / Invariant</h3>
+        <p>“什么情况下允许做什么”“什么情况绝对不能发生”，是安全变更最重要的约束。</p>
+      </div>
+      <div class="card">
+        <h3>BusinessFlow / StateMachine</h3>
+        <p>业务路径、异常路径、状态转换及跨模块动作，让AI理解行为而不只是理解类。</p>
+      </div>
+    </div>
+
+    <div class="code" style="margin-top:18px">
+rule: "普通订单30分钟未支付自动取消"<br>
+status: CONFIRMED<br>
+source: ["product_requirement", "OrderTimeoutJob", "OrderTimeoutTest"]<br>
+confidence: HIGH<br>
+evidence: ["OrderTimeoutJob.java:120", "OrderTimeoutTest.java:85"]
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>03 · FACT / INFERENCE / UNKNOWN</h2>
+      <div class="sub">防止AI把“代码现在这样”误当成“业务规定就是这样”</div>
+    </div>
+    <div class="grid-3">
+      <div class="card" style="border-top:4px solid #2563eb">
+        <h3><span class="pill fact">FACT</span>事实</h3>
+        <p>有代码、需求、测试、文档等直接证据支持的内容。</p>
+        <div class="small" style="margin-top:10px">例如：OrderTimeoutJob 每5分钟执行一次。</div>
+      </div>
+      <div class="card" style="border-top:4px solid #d97706">
+        <h3><span class="pill inf">INFERENCE</span>推导</h3>
+        <p>基于多个事实得出的合理结论，但不是业务原文。</p>
+        <div class="small" style="margin-top:10px">例如：实际取消时间可能存在0~5分钟延迟。</div>
+      </div>
+      <div class="card" style="border-top:4px solid #64748b">
+        <h3><span class="pill unk">UNKNOWN</span>未知</h3>
+        <p>现有资料不足以确认，必须进入 Open Question。</p>
+        <div class="small" style="margin-top:10px">例如：业务是否接受最大5分钟的延迟。</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>04 · 一次真实变更如何发生</h2>
+      <div class="sub">从自然语言需求进入受控变更流水线</div>
+    </div>
+    <div class="flow">
+      <div class="step"><b>需求</b><span>“30 → 20分钟”</span></div><div class="arrow">→</div>
+      <div class="step"><b>Business Understanding</b><span>业务事实+规则</span></div><div class="arrow">→</div>
+      <div class="step"><b>CodeGraph</b><span>代码事实+影响面</span></div><div class="arrow">→</div>
+      <div class="step"><b>Git / PR</b><span>历史原因</span></div><div class="arrow">→</div>
+      <div class="step"><b>DeepSeek</b><span>综合推理</span></div><div class="arrow">→</div>
+      <div class="step"><b>OpenSpec</b><span>变更契约</span></div>
+    </div>
+
+    <div class="three-col" style="margin-top:18px">
+      <div class="stage">
+        <h3>业务世界</h3>
+        <div class="item"><b>确认规则</b><div>普通订单20分钟；VIP规则暂不变。</div></div>
+        <div class="item"><b>不变量</b><div>已支付订单不能被自动取消。</div></div>
+        <div class="item"><b>异常路径</b><div>重复任务、并发取消、超时支付。</div></div>
+      </div>
+      <div class="stage" style="border:2px solid #bfdbfe">
+        <h3>AI Context Engine</h3>
+        <div class="item"><b>CodeGraph</b><div>调用方、被调用方、相关表、事件、测试、Blast Radius。</div></div>
+        <div class="item"><b>Business KB</b><div>规则、流程、状态机、业务约束。</div></div>
+        <div class="item"><b>Git / PR</b><div>历史改动、设计原因、类似问题。</div></div>
+        <div class="item"><b>DeepSeek</b><div>把多源事实组合成可审查的业务理解。</div></div>
+      </div>
+      <div class="stage">
+        <h3>工程世界</h3>
+        <div class="item"><b>OpenSpec</b><div>Requirement / Scenario / Scope / Acceptance。</div></div>
+        <div class="item"><b>Builder</b><div>只在批准范围内实施。</div></div>
+        <div class="item"><b>Verifier</b><div>证明实际改动符合契约。</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>05 · OpenSpec：把业务意图变成“变更契约”</h2>
+      <div class="sub">不是告诉AI改哪一行，而是规定系统改完以后应该表现成什么样</div>
+    </div>
+    <div class="grid-2">
+      <div class="card">
+        <h3>业务层</h3>
+        <div class="small" style="margin-top:8px">背景、目标、Scope、Business Rules、Scenario、Open Questions。</div>
+        <div class="callout" style="margin-top:12px;padding:13px 15px">
+          <strong>核心：</strong>描述“应该发生什么”，而不是先决定“代码怎么写”。
+        </div>
+      </div>
+      <div class="card">
+        <h3>技术层</h3>
+        <div class="small" style="margin-top:8px">Impact、Technical Design、Tasks、Acceptance、Risk。</div>
+        <div class="callout good" style="margin-top:12px;padding:13px 15px">
+          <strong>核心：</strong>让设计和实现受到明确边界约束，并可被自动验证。
+        </div>
+      </div>
+    </div>
+
+    <div class="code" style="margin-top:18px">
+## Requirement: Order Timeout<br><br>
+The system SHALL cancel an unpaid normal order after 20 minutes.<br><br>
+### Scenario: Normal order timeout<br>
+GIVEN a normal unpaid order<br>
+WHEN 20 minutes have elapsed<br>
+THEN the order becomes CANCELLED<br>
+AND inventory is released<br>
+AND OrderCancelledEvent is published
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>06 · Change Contract：AI修改代码前的安全边界</h2>
+      <div class="sub">把“允许改什么、不能改什么、改完要满足什么”结构化</div>
+    </div>
+    <div class="code">
+change: change-order-timeout<br>
+<br>
+intent: "普通订单取消时间从30分钟改为20分钟"<br>
+<br>
+scope:<br>
+  include: [Order, OrderConfig]<br>
+  exclude: [VIP, PromotionOrder, PaymentSuccess]<br>
+<br>
+business_rules: [BR-001, BR-002, BR-003]<br>
+expected_impact:<br>
+  modules: [Order, Inventory]<br>
+  events: [OrderCancelledEvent]<br>
+<br>
+acceptance: [AC-001, AC-002, AC-003]<br>
+risk: [concurrent_cancel, existing_orders]
+    </div>
+    <div class="callout warn" style="margin-top:18px">
+      <strong>安全机制：</strong>Builder 无权自行扩大 Scope；发现新的业务规则或冲突时必须回到 Open Question / Spec，而不是自行决定。
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>07 · Builder：受控实施，而不是自由发挥</h2>
+      <div class="sub">先拿完整 Change Package，再允许修改</div>
+    </div>
+    <div class="arch">
+      <div class="layer">Change Package</div>
+      <div class="arch-row">
+        <div class="arch-box"><b>Business Understanding</b><span>业务事实 / 规则</span></div>
+        <div class="arch-box"><b>OpenSpec</b><span>需求 / Scenario / Scope</span></div>
+        <div class="arch-box"><b>CodeGraph Context</b><span>Edit Context / Impact</span></div>
+        <div class="arch-box"><b>Relevant Tests</b><span>现有验证</span></div>
+        <div class="arch-box"><b>History</b><span>Git / PR</span></div>
+      </div>
+      <div class="arch-row" style="justify-content:center"><div style="font-size:22px;color:#8391a5">↓</div></div>
+      <div class="arch-row">
+        <div class="arch-box" style="background:#eef6ff;border-color:#bfdbfe"><b>DeepSeek + OpenCode Builder</b><span>Plan → Edit → Test → Fix → Test</span></div>
+      </div>
+    </div>
+    <div class="grid-3" style="margin-top:18px">
+      <div class="card"><h3>允许</h3><p>修改批准范围内代码、补测试、执行构建和测试、生成变更说明。</p></div>
+      <div class="card"><h3>禁止</h3><p>自行修改业务规则、扩大Scope、直接进行高风险生产操作。</p></div>
+      <div class="card"><h3>异常处理</h3><p>发现新的影响或业务冲突 → STOP → 生成Open Question → 回到Spec。</p></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>08 · Verifier：三层验证</h2>
+      <div class="sub">不能只做“代码Review”，必须验证业务契约</div>
+    </div>
+    <table>
+      <thead><tr><th>层次</th><th>检查什么</th><th>核心证据</th></tr></thead>
+      <tbody>
+        <tr><td><b>代码验证</b></td><td>编译、单测、集成测试、静态检查、异常路径</td><td>Build / Test / Lint</td></tr>
+        <tr><td><b>Spec验证</b></td><td>每个 Requirement、Scenario、Acceptance 是否实现</td><td>OpenSpec + Test Result</td></tr>
+        <tr><td><b>业务回归验证</b></td><td>实际影响是否超出预期，是否引入未声明的模块/接口/事件变化</td><td>CodeGraph + Git Diff + Business KB</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout danger" style="margin-top:18px">
+      <strong>关键控制：</strong>
+      Expected Impact 与 Actual Changed Impact 必须对比。
+      如果 Spec 声明只修改 Order / Config，但 Git Diff 出现 Payment / Settlement 等非预期模块，Verifier 直接阻断。
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>09 · 完整闭环</h2>
+      <div class="sub">最终实现的是 AI Change Engineering</div>
+    </div>
+    <div class="flow">
+      <div class="step"><b>需求</b><span>自然语言</span></div><div class="arrow">→</div>
+      <div class="step"><b>Business Understanding</b><span>业务事实</span></div><div class="arrow">→</div>
+      <div class="step"><b>CodeGraph / Git</b><span>代码+历史</span></div><div class="arrow">→</div>
+      <div class="step"><b>Impact</b><span>影响与风险</span></div><div class="arrow">→</div>
+      <div class="step"><b>OpenSpec</b><span>变更契约</span></div><div class="arrow">→</div>
+      <div class="step"><b>Approval</b><span>人工确认</span></div><div class="arrow">→</div>
+      <div class="step"><b>Builder</b><span>受控实施</span></div><div class="arrow">→</div>
+      <div class="step"><b>Verifier</b><span>独立验证</span></div><div class="arrow">→</div>
+      <div class="step"><b>Knowledge Update</b><span>知识回流</span></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>10 · 这套体系为什么能持续提效</h2>
+      <div class="sub">每一次真实变更都在增加下一次任务的上下文质量</div>
+    </div>
+    <div class="grid-3">
+      <div class="card"><h3>第一次</h3><p>AI需要大量查询CodeGraph、Git和业务资料，人工确认业务事实。</p></div>
+      <div class="card"><h3>第二次</h3><p>同类业务规则已经进入Business Knowledge和历史Memory，AI更快定位与判断。</p></div>
+      <div class="card"><h3>长期</h3><p>业务知识、CodeGraph事实、历史决策、Spec和验证结果形成持续增长的研发知识资产。</p></div>
+    </div>
+    <div class="callout good" style="margin-top:18px">
+      <strong>最终形成知识飞轮：</strong>
+      代码变化 → 识别新知识 → 人工确认 → 进入知识层 → 下一次任务上下文更完整 → 研发进一步提效。
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="section-title">
+      <h2>11 · 向领导汇报的核心结论</h2>
+      <div class="sub">技术方案最终落脚在“安全完成一次业务变更”</div>
+    </div>
+    <div class="card" style="padding:26px">
+      <h3 style="font-size:21px">不是让AI直接改代码，而是建立一条可验证的AI变更链：</h3>
+      <p style="font-size:18px;color:#334155;margin-top:10px">
+        <b>业务理解</b> → <b>影响分析</b> → <b>变更契约</b> → <b>受控实施</b> → <b>独立验证</b> → <b>知识回流</b>
+      </p>
+      <div class="callout" style="margin-top:18px">
+        <strong>一句话：</strong>
+        CodeGraph 负责代码世界，Business Knowledge 负责业务世界，OpenSpec 负责变更契约，DeepSeek 负责综合推理，Verifier 负责证明“改动符合业务意图且没有越界”。
+      </div>
+    </div>
+  </section>
+
+  <div class="footer">
+    <div><b>关键词：</b>Business Context · CodeGraph · Business Knowledge · Change Contract · OpenSpec · Builder · Verifier · Knowledge Flywheel · AI Change Engineering</div>
+    <div style="margin-top:6px">建议与《AI研发提效专项技术方案_领导汇报版.html》配套使用：前一份讲整体架构与实施路线，本页专门讲“AI如何理解业务并安全完成变更”。</div>
+  </div>
+</main>
+</body>
+</html>

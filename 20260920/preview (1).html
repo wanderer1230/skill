@@ -1,0 +1,232 @@
+<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Business Knowledge与Spec关联方案</title><style>
+:root{
+  --bg:#f4f7fb;--card:#fff;--ink:#152236;--muted:#64748b;--line:#dfe6ef;
+  --navy:#0b1730;--blue:#2563eb;--blue2:#1d4ed8;--green:#059669;
+  --amber:#d97706;--red:#dc2626;--purple:#7c3aed;
+  --soft-blue:#edf4ff;--soft-green:#ecfdf5;--soft-amber:#fff8e8;--soft-red:#fff1f2;--soft-purple:#f5f3ff;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Microsoft YaHei","PingFang SC","Noto Sans SC",Arial,sans-serif;line-height:1.68}
+.topbar{position:sticky;top:0;z-index:20;background:rgba(11,23,48,.96);color:#fff;border-bottom:1px solid rgba(255,255,255,.12);backdrop-filter:blur(10px)}
+.topbar-inner{width:min(1200px,92vw);height:58px;margin:auto;display:flex;align-items:center;justify-content:space-between}
+.brand{font-weight:700}.badge{font-size:12px;color:#dbeafe;border:1px solid rgba(255,255,255,.16);padding:6px 10px;border-radius:999px}
+main{width:min(1200px,92vw);margin:auto}
+.hero{margin-top:28px;padding:54px 58px;border-radius:24px;color:#fff;background:linear-gradient(135deg,#0b1730 0%,#12376f 58%,#185ab9 100%);box-shadow:0 20px 55px rgba(24,59,116,.18)}
+.eyebrow{font-size:13px;letter-spacing:1.5px;color:#bfdbfe;font-weight:800}
+h1{font-size:40px;line-height:1.15;letter-spacing:-1px;margin:12px 0 14px}
+.hero p{margin:0;color:#dbeafe;font-size:18px;max-width:1020px}
+.hero-grid{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;margin-top:28px}
+.hero-stat{border:1px solid rgba(255,255,255,.14);background:rgba(255,255,255,.08);border-radius:16px;padding:18px}
+.hero-stat .big{font-size:25px;font-weight:800}.hero-stat .small{font-size:13px;color:#cfe0fb}
+.section{padding:50px 0 6px}.section-title{display:flex;justify-content:space-between;align-items:end;gap:20px;margin-bottom:18px}
+.section-title h2{margin:0;font-size:28px}.section-title .sub{font-size:13px;color:var(--muted)}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:18px}.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:21px;box-shadow:0 8px 24px rgba(16,34,62,.04)}
+.card h3{margin:0 0 7px;font-size:18px}.card p{margin:0;color:var(--muted)}
+.callout{padding:18px 20px;border-radius:14px;border:1px solid #cfe0ff;border-left:5px solid var(--blue);background:var(--soft-blue)}
+.callout strong{color:var(--blue2)}.small{font-size:13px;color:var(--muted)}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:20px;background:#fff;border:1px solid var(--line);border-radius:18px}
+.step{min-width:130px;padding:13px 14px;text-align:center;border:1px solid #cfe0ff;background:#f8fbff;border-radius:12px}.step b{display:block}.step span{display:block;font-size:12px;color:var(--muted);margin-top:3px}
+.arrow{font-size:22px;color:#8291a5}
+.arch{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;overflow:auto}
+.arch-row{display:flex;gap:12px;align-items:stretch;margin:12px 0}
+.arch-box{flex:1;min-width:145px;padding:15px;border:1px solid #dbe3ee;border-radius:14px;background:#f8fafc;text-align:center}.arch-box b{display:block}.arch-box span{font-size:12px;color:var(--muted)}
+.layer{font-size:12px;color:#7d8da2;margin:5px 0}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px}.kpi .n{font-size:25px;font-weight:800}.kpi .t{font-size:12px;color:var(--muted)}
+.three{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:14px}.stage{background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px}.stage h3{margin:0 0 12px}
+.item{padding:10px 12px;border-radius:10px;background:#f8fafc;border:1px solid #e7edf4;margin-top:9px}.item b{font-size:13px}.item div{font-size:12px;color:var(--muted);margin-top:3px}
+.code{background:#0f172a;color:#dbeafe;border-radius:14px;padding:18px;overflow:auto;font-family:Consolas,Monaco,monospace;font-size:13px;line-height:1.58}
+table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden}
+th,td{padding:13px 14px;text-align:left;border-bottom:1px solid var(--line);vertical-align:top;font-size:14px}th{background:#f8fafc;font-size:13px}tr:last-child td{border-bottom:none}
+.pill{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;margin-right:5px}.confirmed{background:#dcfce7;color:#047857}.candidate{background:#fff7ed;color:#b45309}.unknown{background:#f1f5f9;color:#475569}.specpill{background:#ede9fe;color:#6d28d9}
+.good{background:var(--soft-green);border-left-color:var(--green);border-color:#bbf7d0}.good strong{color:#047857}
+.warn{background:var(--soft-amber);border-left-color:var(--amber);border-color:#fed7aa}.warn strong{color:#b45309}
+.danger{background:var(--soft-red);border-left-color:var(--red);border-color:#fecdd3}.danger strong{color:#be123c}
+.purple{background:var(--soft-purple);border-left-color:var(--purple);border-color:#ddd6fe}.purple strong{color:#6d28d9}
+.footer{margin:55px 0 30px;padding-top:18px;border-top:1px solid var(--line);color:#738196;font-size:12px}
+@media(max-width:900px){.hero-grid,.grid-2,.grid-3,.grid-4,.three{grid-template-columns:1fr}.hero{padding:38px 26px}h1{font-size:32px}.arch-row{flex-wrap:wrap}}
+@media print{.topbar{position:static}.hero{box-shadow:none}body{background:#fff}}
+</style></head><body>
+<div class="topbar"><div class="topbar-inner"><div class="brand">Business Knowledge与Spec关联方案</div><div class="badge">AI研发提效 · 技术方案</div></div></div>
+<main>
+
+<section class="hero">
+  <div class="eyebrow">BUSINESS KNOWLEDGE × SPEC</div>
+  <h1>Business Knowledge 怎么和 Spec 关联？</h1>
+  <p>把 Business Knowledge 作为“长期业务事实层”，把 OpenSpec 作为“本次变更契约层”。Spec 不重新发明业务规则，而是引用、继承并在需要时变更 Business Knowledge；实施完成后，经过验证的新增事实再回流更新知识层。</p>
+  <div class="hero-grid">
+    <div class="hero-stat"><div class="big">两者分工</div><div class="small">Knowledge回答“系统现在应该是什么样”；Spec回答“这一次要把它改成什么样”。</div></div>
+    <div class="hero-stat"><div class="big">核心闭环</div><div class="small">Knowledge → Spec → Implementation → Verification → Knowledge Update</div></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title"><h2>01 · Business Knowledge 与 Spec 的边界</h2><div class="sub">避免知识库和需求文档重复、冲突</div></div>
+  <div class="grid-2">
+    <div class="card" style="border-top:4px solid #059669">
+      <h3>Business Knowledge · “现在的事实”</h3>
+      <p>稳定、可复用、跨多个需求长期成立的业务术语、规则、流程、状态和不变量。</p>
+      <div class="small" style="margin-top:10px">例：普通订单30分钟未支付自动取消。</div>
+    </div>
+    <div class="card" style="border-top:4px solid #7c3aed">
+      <h3>OpenSpec · “本次变更”</h3>
+      <p>本次需求的背景、目标、Scope、Requirement、Scenario、Impact、Design、Acceptance和Tasks。</p>
+      <div class="small" style="margin-top:10px">例：本次把普通订单超时规则从30分钟变成20分钟。</div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title"><h2>02 · 正确的数据流</h2><div class="sub">Knowledge 是 Spec 的输入，Spec 是变更后的契约</div></div>
+  <div class="flow">
+    <div class="step"><b>Business Knowledge</b><span>当前规则/流程/状态</span></div><div class="arrow">→</div>
+    <div class="step"><b>需求</b><span>用户提出改变</span></div><div class="arrow">→</div>
+    <div class="step"><b>Impact</b><span>CodeGraph + Git</span></div><div class="arrow">→</div>
+    <div class="step"><b>OpenSpec</b><span>形成变更契约</span></div><div class="arrow">→</div>
+    <div class="step"><b>Builder</b><span>按契约实施</span></div><div class="arrow">→</div>
+    <div class="step"><b>Verifier</b><span>验证契约</span></div><div class="arrow">→</div>
+    <div class="step"><b>Knowledge Update</b><span>更新长期事实</span></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title"><h2>03 · Spec 如何“引用”业务知识</h2><div class="sub">不要把整套业务规则复制粘贴进每个需求</div></div>
+  <div class="code">
+# Change: Reduce normal-order timeout<br><br>
+## Business Context<br>
+References:<br>
+- BK-ORDER-001: 普通订单支付超时规则<br>
+- BK-ORDER-007: 订单取消后库存必须释放<br>
+- BK-ORDER-011: 已支付订单不能自动取消<br><br>
+## Change Intent<br>
+将 BK-ORDER-001 中普通订单超时阈值由30分钟调整为20分钟。<br><br>
+## Scope<br>
+Included: Normal Order / Timeout Cancellation<br>
+Excluded: VIP / Promotion Order / Manual Cancellation<br><br>
+## Acceptance<br>
+AC-001: 20分钟未支付 → CANCELLED<br>
+AC-002: 已支付订单不得自动取消<br>
+AC-003: 取消后库存释放
+  </div>
+  <div class="callout purple" style="margin-top:18px"><strong>关键点：</strong>Spec引用“稳定知识”，只声明“这次改变什么”；避免复制粘贴导致规则在多个地方分叉。</div>
+</section>
+
+<section class="section">
+  <div class="section-title"><h2>04 · 用“Knowledge ID”建立稳定关联</h2><div class="sub">建议为正式业务知识分配唯一ID</div></div>
+  <div class="grid-3">
+    <div class="card"><h3>BK-ORDER-001</h3><p>普通订单支付超时规则</p></div>
+    <div class="card"><h3>BK-ORDER-007</h3><p>订单取消后的库存释放规则</p></div>
+    <div class="card"><h3>BK-ORDER-011</h3><p>已支付订单禁止自动取消</p></div>
+  </div>
+  <div class="callout" style="margin-top:18px">
+    <strong>关联关系：</strong>
+    <span>Spec → references → Business Knowledge；Knowledge → referenced_by → Change Specs。</span>
+    <div class="small" style="margin-top:6px">这样可以做到：知道一个业务规则被哪些需求使用，也能判断一个业务规则变化会影响哪些历史变更和当前实现。</div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title"><h2>05 · 需求进入后，AI如何自动生成 Spec</h2><div class="sub">从知识层“拉事实”，再生成本次变更的行为契约</div></div>
+  <div class="arch">
+    <div class="layer">Input</div>
+    <div class="arch-row">
+      <div class="arch-box"><b>User Request</b><span>“30 → 20分钟”</span></div>
+    </div>
+    <div class="layer">Context Retrieval</div>
+    <div class="arch-row">
+      <div class="arch-box"><b>Business KB</b><span>相关规则、流程、状态</span></div>
+      <div class="arch-box"><b>CodeGraph</b><span>相关实现、依赖、测试、影响</span></div>
+      <div class="arch-box"><b>Git / PR</b><span>历史原因与类似变更</span></div>
+    </div>
+    <div class="layer">Reasoning</div>
+    <div class="arch-row">
+      <div class="arch-box" style="background:#eef6ff;border-color:#bfdbfe"><b>DeepSeek V4</b><span>判断当前事实 + 变化意图 + 冲突</span></div>
+    </div>
+    <div class="layer">Output</div>
+    <div class="arch-row">
+      <div class="arch-box"><b>OpenSpec</b><span>Requirements / Scenarios / Scope / Acceptance</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title"><h2>06 · Spec 可以反过来更新 Knowledge 吗？</h2><div class="sub">可以，但不能自动“以Spec为真”</div></div>
+  <div class="grid-3">
+    <div class="card"><h3>Spec提出变更</h3><p>例如：30分钟 → 20分钟。</p></div>
+    <div class="card"><h3>实施+验证</h3><p>代码、测试、Review证明新规则确实落地。</p></div>
+    <div class="card"><h3>知识更新</h3><p>Knowledge Agent生成 Update Proposal，引用 Spec + Code + Test 作为证据。</p></div>
+  </div>
+  <div class="flow" style="margin-top:18px">
+    <div class="step"><b>Old Knowledge</b><span>30分钟</span></div><div class="arrow">→</div>
+    <div class="step"><b>Change Spec</b><span>要求改成20分钟</span></div><div class="arrow">→</div>
+    <div class="step"><b>Implemented</b><span>代码已修改</span></div><div class="arrow">→</div>
+    <div class="step"><b>Verified</b><span>测试/Review通过</span></div><div class="arrow">→</div>
+    <div class="step"><b>New Knowledge</b><span>20分钟</span></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title"><h2>07 · 版本与冲突管理</h2><div class="sub">Knowledge 与 Spec 都是可追溯资产</div></div>
+  <table>
+    <thead><tr><th>情况</th><th>系统如何处理</th></tr></thead>
+    <tbody>
+      <tr><td>Spec引用当前Knowledge</td><td>记录 Knowledge ID + version，确保变更时知道当时依据的是哪个版本。</td></tr>
+      <tr><td>多个Spec引用同一规则</td><td>可以反向查看影响范围；规则发生变化时识别潜在受影响需求/实现。</td></tr>
+      <tr><td>代码与Knowledge冲突</td><td>标记 conflict，不允许AI默认选择一方；进入人工确认。</td></tr>
+      <tr><td>Spec与Knowledge冲突</td><td>视为“本次变更意图”，但必须明确是修改规则还是违反现有规则。</td></tr>
+      <tr><td>变更验证失败</td><td>不更新正式Knowledge，维持旧版本。</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="section">
+  <div class="section-title"><h2>08 · 最终形成“双向闭环”</h2><div class="sub">Knowledge 指导 Spec，Spec 经过验证后反哺 Knowledge</div></div>
+  <div class="three">
+    <div class="stage">
+      <h3>长期知识层</h3>
+      <div class="item"><b>Business Knowledge</b><div>稳定业务事实</div></div>
+      <div class="item"><b>Knowledge ID / Version</b><div>可追溯、可引用</div></div>
+    </div>
+    <div class="stage" style="border:2px solid #c4b5fd">
+      <h3>变更契约层</h3>
+      <div class="item"><b>OpenSpec</b><div>引用旧知识 → 声明本次变化 → 定义验收</div></div>
+      <div class="item"><b>Change Contract</b><div>限制Scope与风险</div></div>
+      <div class="item"><b>Verifier</b><div>验证实际变化是否符合契约</div></div>
+    </div>
+    <div class="stage">
+      <h3>知识回流层</h3>
+      <div class="item"><b>Knowledge Update Proposal</b><div>Spec + Code + Test作为证据</div></div>
+      <div class="item"><b>Human Confirmation</b><div>确认后发布新知识版本</div></div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title"><h2>09 · 最值得落地的3个机制</h2><div class="sub">第一阶段就可以实现</div></div>
+  <div class="grid-3">
+    <div class="card"><h3>① Knowledge ID</h3><p>所有正式业务规则都有唯一ID，Spec不复制规则文本，而是引用它。</p></div>
+    <div class="card"><h3>② Evidence Link</h3><p>Knowledge 和 Spec 都绑定 CodeGraph、代码、测试、需求或Git等证据。</p></div>
+    <div class="card"><h3>③ Update Proposal</h3><p>变更完成后AI自动判断哪些Knowledge需要更新，生成人工可审查的更新提案。</p></div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="section-title"><h2>10 · 汇报结论</h2><div class="sub">把业务知识和Spec从两个孤立文档变成一个系统</div></div>
+  <div class="card" style="padding:26px">
+    <h3 style="font-size:21px">核心关系：</h3>
+    <p style="font-size:18px;color:#334155;margin-top:10px">
+      <b>Business Knowledge = 当前业务事实</b><br>
+      <b>OpenSpec = 本次业务变更契约</b><br>
+      <b>CodeGraph = 当前代码事实</b><br>
+      <b>Verifier = 事实、契约、实际变更之间的一致性证明</b>
+    </p>
+    <div class="callout good" style="margin-top:18px">
+      <strong>最终目标：</strong>任何一次业务变更都能回答四个问题——“原来是什么？为什么改？准备改成什么？改完以后有没有真的符合业务意图？”
+    </div>
+  </div>
+</section>
+
+<div class="footer"><b>关键词：</b>Business Knowledge · Knowledge ID · Evidence · OpenSpec · Change Contract · Versioning · Conflict Detection · Knowledge Update</div>
+
+</main></body></html>
